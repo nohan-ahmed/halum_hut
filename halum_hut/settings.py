@@ -33,7 +33,7 @@ SECRET_KEY = 'django-insecure-epst$e%yvw2fpqcy%=4awc$$qtj@r^+y2yzsye5+kfxi_u#mnx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'accounts.User'  # Specify the custom user model
 
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "daphne",
     "django.contrib.staticfiles",
     # third party apps
     "rest_framework",
@@ -59,6 +60,8 @@ INSTALLED_APPS = [
     # ...,
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    # django-channels
+    "channels",
     # custom apps
     "accounts",
     "core",
@@ -98,7 +101,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'halum_hut.wsgi.application'
+# WSGI_APPLICATION = 'halum_hut.wsgi.application'
+ASGI_APPLICATION = 'halum_hut.asgi.application'
 
 
 # Database
@@ -111,6 +115,12 @@ DATABASES = {
     }
 }
 
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
