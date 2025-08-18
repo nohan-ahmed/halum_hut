@@ -3,6 +3,10 @@ from django.dispatch import receiver
 from .models import Order, OrderItem
 from notifications.tasks import send_notification_task
 
+
+"""
+Sends a notification to the user when an order is created or updated.
+"""
 @receiver(post_save, sender=Order)
 def send_order_notification(sender, instance, created, **kwargs):
     if created:
@@ -15,7 +19,7 @@ def send_order_notification(sender, instance, created, **kwargs):
         
         pass
         
-    else:
+    else:        
         send_notification_task.delay(
             recipient=instance.user,
             title=f'{instance.status} Order',
@@ -25,3 +29,17 @@ def send_order_notification(sender, instance, created, **kwargs):
         
         
         
+"""
+Sends a notification to the product owner when a new order item is created.
+"""    
+@receiver(post_save, sender=OrderItem)
+def send_order_item_notification(sender, instance, created, **kwargs):
+    if created:
+        rechipient_user = instance.order.product_variant.product.user
+        send_notification_task.delay(
+            recipient=rechipient_user,
+            title=f'A new order has been placed. Order ID: {instance.order.pk}',
+            message=f"Product: {instance.product_variant.product.name} - Quantity: {instance.quantity} - Subtotal: {instance.subtotal}",
+            notification_type='order',
+        )
+              
