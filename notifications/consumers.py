@@ -14,12 +14,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         Called when a websocket connection is opened.
         Authenticates user and adds to their private notification group.
         """
+        
         self.user = self.scope.get("user")
         if self.user is None or isinstance(self.user, AnonymousUser):
+            print("no user", self.user)
             await self.close()
             return
 
         self.group_name = f"user_{self.user.id}_notifications"
+        # self.group_name = f"user_{self.user.id}_notifications"
 
         try:
             await self.channel_layer.group_add(
@@ -79,6 +82,8 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         Sends a single notification to the frontend.
         Triggered by `group_send` in the backend.
         """
+        
+        print('------------debug send_notification------------')
         try:
             notification_data = event.get("notification")
             if notification_data:
@@ -88,6 +93,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                 }))
         except Exception as e:
             logger.exception(f"Error sending notification to user {self.user.id}: {e}")
+            
 
     # ------------------------------
     # Database helper methods

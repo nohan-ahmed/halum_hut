@@ -18,9 +18,11 @@ def get_user(user_id):
 
 class JWTAuthMiddleware(BaseMiddleware):
     async def __call__(self, scope, receive, send):
+
         query_string = parse_qs(scope.get("query_string", b"").decode())
         token = query_string.get("token")
         if token:
+            print(f"*********Incoming WS query string: {token[0]}")
             token = token[0]  # get first value
             try:
                 validated_token = UntypedToken(token)
