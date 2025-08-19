@@ -21,7 +21,7 @@ def send_order_notification(sender, instance, created, **kwargs):
         
     else:        
         send_notification_task.delay(
-            recipient_=instance.user.id,
+            recipient_id=instance.user.id,
             title=f'{instance.status} Order',
             message=f"Your order has been {instance.status}. Order ID: {instance.pk}",
             notification_type='order',
