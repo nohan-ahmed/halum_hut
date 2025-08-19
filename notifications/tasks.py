@@ -8,7 +8,8 @@ import time
 
 
 @shared_task
-def send_notification_task(recipient, title, message, notification_type='message', sender_id=None, url=None):
+def send_notification_task(recipient_id, title, message, notification_type='message', sender_id=None, url=None):
+    recipient = User.objects.get(id=recipient_id)
     sender = User.objects.get(id=sender_id) if sender_id else None
     
     # Create the notification instance

@@ -11,7 +11,7 @@ Sends a notification to the user when an order is created or updated.
 def send_order_notification(sender, instance, created, **kwargs):
     if created:
         send_notification_task.delay(
-            recipient=instance.user,
+            recipient_id=instance.user.id,
             title=f'{instance.status} Order',
             message=f"Your order has been {instance.status}. Order ID: {instance.pk}",
             notification_type='order',
@@ -21,7 +21,7 @@ def send_order_notification(sender, instance, created, **kwargs):
         
     else:        
         send_notification_task.delay(
-            recipient=instance.user,
+            recipient_=instance.user.id,
             title=f'{instance.status} Order',
             message=f"Your order has been {instance.status}. Order ID: {instance.pk}",
             notification_type='order',
