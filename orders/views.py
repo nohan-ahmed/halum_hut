@@ -1,4 +1,7 @@
+after code:
+
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView , RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -6,10 +9,11 @@ from django.db import transaction
 from django.utils import timezone
 # Local Imports
 from .models import Order, OrderItem, ShippingAddress, Payment
-from .serializers import ShippingAddressSerializer
+from .serializers import ShippingAddressSerializer, OrderSerializer
 from cart.models import CartItem
 from products.models import ProductVariant  # if using variants
-
+from core.paginations import StandardResultsSetPagination
+from core.Permissions import IsOwner
 
 class CreateOrderWithCOD(APIView):
     permission_classes = [IsAuthenticated]
@@ -18,15 +22,18 @@ class CreateOrderWithCOD(APIView):
         user = request.user
 
         # Validate shipping address
-        shipping_data = request.data.get('shipping_address')
-        if not shipping_data:
+        shipping_data_id = request.data.get('shipping_address')
+        if not shipping_data_id:
             return Response({"error": "Shipping address is required."}, status=status.HTTP_400_BAD_REQUEST)
-        # Create shipping address
-        addr_serializer = ShippingAddressSerializer(data=shipping_data)
-        addr_serializer.is_valid(raise_exception=True)
-        shipping_address = addr_serializer.save(user=user)
+        
+        # Get shipping address by id
+        try:
+            shipping_address = ShippingAddress.objects.get(user=user, id=shipping_data_id)
+        except ShippingAddress.DoesNotExist:
+            return Response({"error": "Shipping address does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Get cart items
+        print(f"_____ {shipping_address}_____")
         cart_items = CartItem.objects.filter(cart__user=user)
         if not cart_items.exists():
             return Response({"error": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
@@ -87,3 +94,21 @@ class CreateOrderWithCOD(APIView):
             "status": order.status,
             "payment_method": "cod"
         }, status=status.HTTP_201_CREATED)
+
+
+# List all orders
+class OrderList(ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsOwner]
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        user = self.request.user
+        return Order.objects.filter(user=user)
+    
+    
+class OrderUpdateDetail(RetrieveUpdateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsOwner]
