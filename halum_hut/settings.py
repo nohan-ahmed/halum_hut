@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "orders",
     "notifications",
     "reviews",
+    "coupons",
 ]
 
 MIDDLEWARE = [
