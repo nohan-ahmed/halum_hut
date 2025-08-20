@@ -1,5 +1,3 @@
-after code:
-
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView , RetrieveUpdateAPIView
 from rest_framework.response import Response
