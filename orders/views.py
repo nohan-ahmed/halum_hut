@@ -1,17 +1,34 @@
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView , RetrieveUpdateAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from django.utils import timezone
+
 # Local Imports
 from .models import Order, OrderItem, ShippingAddress, Payment
 from .serializers import ShippingAddressSerializer, OrderSerializer
 from cart.models import CartItem
-from products.models import ProductVariant  # if using variants
+from products.models import ProductVariant  # Handles product variants (e.g., size, color)
 from core.paginations import StandardResultsSetPagination
 from core.Permissions import IsOwner
+
+# ------------------------------------------------------------------------------
+# API endpoint to create an order using Cash On Delivery (COD) payment method.
+# ------------------------------------------------------------------------------
+# - Validates shipping address and cart items.
+# - Creates an Order and associated OrderItems.
+# - Updates product stock and creates a Payment record.
+# - Clears the user's cart after order creation.
+# - Returns order details on success.
+# ------------------------------------------------------------------------------
+# Future Considerations:
+# - Add support for other payment methods.
+# - Handle race conditions for stock updates (consider row-level locking).
+# - Improve error handling for stock validation and payment creation.
+# - Add notifications (email/SMS) after order creation.
+# ------------------------------------------------------------------------------
 
 class CreateOrderWithCOD(APIView):
     permission_classes = [IsAuthenticated]
@@ -19,45 +36,48 @@ class CreateOrderWithCOD(APIView):
     def post(self, request):
         user = request.user
 
-        # Validate shipping address
+        # Validate that a shipping address ID is provided in the request.
         shipping_data_id = request.data.get('shipping_address')
         if not shipping_data_id:
             return Response({"error": "Shipping address is required."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Get shipping address by id
+        # Retrieve the shipping address for the user.
         try:
             shipping_address = ShippingAddress.objects.get(user=user, id=shipping_data_id)
         except ShippingAddress.DoesNotExist:
             return Response({"error": "Shipping address does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get cart items
-        print(f"_____ {shipping_address}_____")
+        # Fetch all cart items for the user.
         cart_items = CartItem.objects.filter(cart__user=user)
         if not cart_items.exists():
             return Response({"error": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Use a database transaction to ensure atomicity of order creation.
         with transaction.atomic():
-            # Create order
+            # Create the order with initial total_price=0 (will be updated below).
             order = Order.objects.create(
                 user=user,
                 shipping_address=shipping_address,
-                total_price=0, # will calculate below
-                status='confirmed',  # COD is usually considered "confirmed" immediately
+                total_price=0,  # Will be calculated after adding items.
+                status='confirmed',  # COD orders are confirmed immediately.
             )
 
-            total = 0
+            total = 0  # Track total order price.
 
+            # Iterate through cart items to create OrderItems and update stock.
             for item in cart_items:
                 product_variant = item.variant
 
-                # Validate stock
+                # Check if enough stock is available for the requested quantity.
                 if product_variant.stock < item.quantity:
+                    # NOTE: Consider handling this error more gracefully in future.
                     raise ValueError(f"Not enough stock for product_variant: {product_variant.product.name}")
 
-                # Calculate price & create OrderItem
-                price = product_variant.price  # snapshot price
+                # Calculate item price and subtotal.
+                price = product_variant.price  # Use current price as snapshot.
                 subtotal = price * item.quantity
 
+                # Create an OrderItem for each cart item.
                 OrderItem.objects.create(
                     order=order,
                     product_variant=product_variant,
@@ -66,27 +86,29 @@ class CreateOrderWithCOD(APIView):
                     subtotal=subtotal
                 )
 
-                # Update product_variant stock
+                # Deduct purchased quantity from product stock.
                 product_variant.stock -= item.quantity
                 product_variant.save()
 
-                total += subtotal
+                total += subtotal  # Add to order total.
 
+            # Update order with the final total price.
             order.total_price = total
             order.save()
 
-            # Create payment record
+            # Create a Payment record for COD.
             Payment.objects.create(
                 order=order,
                 user=user,
                 method='cod',
                 status='initiated',
-                paid_at=None,
+                paid_at=None,  # COD payments are not paid upfront.
             )
 
-            # Clear cart
+            # Clear the user's cart after successful order creation.
             cart_items.delete()
 
+        # Return order details in the response.
         return Response({
             "order_id": order.id,
             "status": order.status,
@@ -94,7 +116,17 @@ class CreateOrderWithCOD(APIView):
         }, status=status.HTTP_201_CREATED)
 
 
-# List all orders
+# ------------------------------------------------------------------------------
+# API endpoint to list all orders for the authenticated user.
+# ------------------------------------------------------------------------------
+# - Uses pagination for large order lists.
+# - Only returns orders belonging to the requesting user.
+# ------------------------------------------------------------------------------
+# Future Considerations:
+# - Add filtering (by status, date, etc.).
+# - Support admin views for all orders.
+# ------------------------------------------------------------------------------
+
 class OrderList(ListAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -103,9 +135,21 @@ class OrderList(ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
+        # Only return orders for the current user.
         return Order.objects.filter(user=user)
     
-    
+
+# ------------------------------------------------------------------------------
+# API endpoint to retrieve and update a specific order.
+# ------------------------------------------------------------------------------
+# - Only allows access to orders owned by the requesting user.
+# - Supports partial updates (PATCH) and full updates (PUT).
+# ------------------------------------------------------------------------------
+# Future Considerations:
+# - Restrict updates to certain fields (e.g., status, address).
+# - Add admin permissions for managing all orders.
+# ------------------------------------------------------------------------------
+
 class OrderUpdateDetail(RetrieveUpdateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
