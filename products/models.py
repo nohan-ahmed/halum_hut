@@ -13,6 +13,17 @@ class Brand(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
+    
+    # automatically create slug
+    def save(self, *args, **kwargs):
+        base_slug = slugify(self.name)
+        slug = base_slug
+        counter = 1
+        while Brand.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
