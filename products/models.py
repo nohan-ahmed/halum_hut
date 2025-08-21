@@ -36,6 +36,16 @@ class Category(models.Model):
     slug = models.SlugField(unique=True)
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.CASCADE)
 
+    def save(self, *args, **kwargs):
+        base_slug = slugify(self.name)
+        slug = base_slug
+        counter = 1
+        while Category.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        self.slug = slug
+        super().save(*args, **kwargs)
+        
     class Meta:
         verbose_name_plural = 'Categories'
 
