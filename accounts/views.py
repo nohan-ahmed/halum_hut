@@ -20,8 +20,8 @@ from rest_framework.filters import SearchFilter
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 # import from locals
-from accounts.models import User, Address, SellerAccount
-from .serializers import CustomRegisterSerializer, AddressSerializer, SellerAccountSerializer
+from accounts.models import User, Address
+from .serializers import CustomRegisterSerializer, AddressSerializer
 from core.Permissions import IsOwnerOrReadOnly
 from core.paginations import StandardResultsSetPagination
 # Create your views here.
@@ -76,8 +76,8 @@ class AddressView(ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
     throttle_classes = [UserRateThrottle]
     filter_backends = [DjangoFilterBackend, SearchFilter]
-    search_fields = ['address_line_1', 'city', 'state', 'zip_code']
-    filterset_fields = ['city', 'state']
+    search_fields = ['country', 'city', 'state']
+    filterset_fields = ['user', 'city', 'state']
     pagination_class = StandardResultsSetPagination
 
     def perform_create(self, serializer):
@@ -86,20 +86,3 @@ class AddressView(ModelViewSet):
         except IntegrityError:
             raise ValidationError({"error": "User already has an address."})
         
-class SellerAccountView(ModelViewSet):
-    queryset = SellerAccount.objects.all()
-    serializer_class = SellerAccountSerializer
-    permission_classes = [IsOwnerOrReadOnly]
-    throttle_classes = [UserRateThrottle]
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    search_fields = ['id', 'store_name', 'store_description']
-    filterset_fields = ['store_name']
-    pagination_class = StandardResultsSetPagination
-
-    def perform_create(self, serializer):
-        # Ensure that the user does not already have a seller account
-        try:
-            serializer.save(user=self.request.user)
-        except IntegrityError:
-            raise ValidationError({"error": "User already has a seller account."})
-    

@@ -9,13 +9,11 @@ from .views import (
     VerifyEmailView,
     GoogleLoginView,
     AddressView,
-    SellerAccountView,
 )
 
 # DRF Router for ViewSet-based APIs
 router = DefaultRouter()
 router.register(r'address', AddressView, basename='address')
-router.register(r'seller-account', SellerAccountView, basename='seller-account')
 
 # Custom auth-related routes
 auth_patterns = [

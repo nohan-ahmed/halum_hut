@@ -1,7 +1,7 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
-from accounts.models import User, Address, SellerAccount
+from accounts.models import User, Address
 
 class CustomRegisterSerializer(serializers.ModelSerializer):
     # This field is used for user's password validation purposes.
@@ -38,8 +38,3 @@ class AddressSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'user', 'created_at', 'updated_at')
         
 
-class SellerAccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SellerAccount
-        fields = ('id', 'user', 'store_name', 'store_description', "store_logo", "contact_email", "contact_phone", "balance", "pending_balance", "total_earnings", "is_active", 'created_at', 'updated_at')
-        read_only_fields = ('id', 'user', "balance", "pending_balance", "total_earnings", "is_active", 'created_at', 'updated_at')
