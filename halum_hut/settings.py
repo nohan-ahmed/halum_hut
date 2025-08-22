@@ -189,6 +189,7 @@ REST_FRAMEWORK = {
         "anon": "10000/day",
         "user": "10000/day",
         "register": "10/day",  # Custom throttle for registration
+        "create_order": "100/day",  # Custom throttle for order creation
     },
 }
 

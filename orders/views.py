@@ -18,15 +18,6 @@ from products.models import ProductVariant  # Handles product variants (e.g., si
 from core.paginations import StandardResultsSetPagination
 from core.Permissions import IsOwner
 
-# ------------------------------------------------------------------------------
-# API endpoint to create an order using Cash On Delivery (COD) payment method.
-# ------------------------------------------------------------------------------
-# - Validates shipping address and cart items.
-# - Creates an Order and associated OrderItems.
-# - Updates product stock and creates a Payment record.
-# - Clears the user's cart after order creation.
-# - Returns order details on success.
-# ------------------------------------------------------------------------------
 
 class ShippingAddressViewSet(ModelViewSet):
     queryset = ShippingAddress.objects.all()
@@ -45,6 +36,15 @@ class ShippingAddressViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+# ------------------------------------------------------------------------------
+# API endpoint to create an order using Cash On Delivery (COD) payment method.
+# ------------------------------------------------------------------------------
+# - Validates shipping address and cart items.
+# - Creates an Order and associated OrderItems.
+# - Updates product stock and creates a Payment record.
+# - Clears the user's cart after order creation.
+# - Returns order details on success.
+# ------------------------------------------------------------------------------
 # Future Considerations:
 # - Add support for other payment methods.
 # - Handle race conditions for stock updates (consider row-level locking).
@@ -54,7 +54,9 @@ class ShippingAddressViewSet(ModelViewSet):
 
 class CreateOrderWithCOD(APIView):
     permission_classes = [IsAuthenticated]
-
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'create_order'
+    
     def post(self, request):
         user = request.user
 
@@ -154,6 +156,7 @@ class OrderList(ListAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsOwner]
     pagination_class = StandardResultsSetPagination
+    throttle_classes = [UserRateThrottle]
     
     def get_queryset(self):
         user = self.request.user
@@ -176,3 +179,4 @@ class OrderUpdateDetail(RetrieveUpdateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsOwner]
+    throttle_classes = [UserRateThrottle]
