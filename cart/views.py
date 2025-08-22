@@ -8,7 +8,7 @@ from core.Permissions import IsOwnerOrReadOnly, IsOwner
 from core.paginations import StandardResultsSetPagination
 from . import serializers
 from . import models
-from .Permissions import IsOwnerForCartItem
+from .Permissions import IsOwnerForCartItem, IsOwnerForWishlistItem
 
 # Create your views here.
 
@@ -72,10 +72,10 @@ class WishlistViewSet(viewsets.ModelViewSet):
 
 class WishlistItemViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.WishlistItemSerializer
-    permission_classes = [IsOwner]
+    permission_classes = [IsOwnerForWishlistItem]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['wishlist__user', 'product']
+    filterset_fields = ['wishlist__user', 'product__name']
     search_fields = ['product__name']
 
     def get_queryset(self):
