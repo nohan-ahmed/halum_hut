@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 from rest_framework.exceptions import ValidationError
 from core.Permissions import IsOwnerOrReadOnly
@@ -22,11 +23,12 @@ class ReviewListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         product_id = self.kwargs.get("product_id")
-        product = Product.objects.get(pk=product_id)
+        # Note: get_object_or_404 will raise a 404 error if the object is not found
+        product = get_object_or_404(Product, pk=product_id)
 
         # Prevent multiple reviews from same user
         if Review.objects.filter(product=product, user=self.request.user).exists():
-            raise ValidationError("You have already reviewed this product.")
+            raise ValidationError({"detail": "You have already reviewed this product."})
 
         serializer.save(product=product, user=self.request.user)
 
