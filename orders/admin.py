@@ -3,7 +3,7 @@ from .models import ShippingAddress, Order, OrderItem, Payment
 
 # Register your models here.
 class ShippingAddressAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'user', 'city', 'country', 'created_at')
+    list_display = ('id' ,'full_name', 'user', 'city', 'country', 'created_at')
     search_fields = ('full_name', 'user__email', 'city', 'country')
     list_filter = ('country', 'created_at')
 

@@ -1,8 +1,12 @@
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from rest_framework.throttling import UserRateThrottle, ScopedRateThrottle
 from django.db import transaction
 from django.utils import timezone
 
@@ -23,6 +27,24 @@ from core.Permissions import IsOwner
 # - Clears the user's cart after order creation.
 # - Returns order details on success.
 # ------------------------------------------------------------------------------
+
+class ShippingAddressViewSet(ModelViewSet):
+    queryset = ShippingAddress.objects.all()
+    serializer_class = ShippingAddressSerializer
+    permission_classes = [IsOwner]
+    throttle_classes = [UserRateThrottle]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ['id', 'full_name', 'city', 'country']
+    
+    # Filters the queryset to include only shipping addresses for the current user.
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+    
+    # Creates a shipping address for the current user.
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
 # Future Considerations:
 # - Add support for other payment methods.
 # - Handle race conditions for stock updates (consider row-level locking).
