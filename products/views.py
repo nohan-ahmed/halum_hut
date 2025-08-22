@@ -18,7 +18,7 @@ class BrandAPIView(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter]
-    search_fields = ['id', 'name']  # Adjust the fields you want to search on
+    search_fields = ['id', 'name', 'slug']  # Adjust the fields you want to search on
     
 
 class CategoryAPIView(ModelViewSet):
@@ -28,7 +28,7 @@ class CategoryAPIView(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter]
-    search_fields = ['id', 'name']  # Adjust the fields you want to search on
+    search_fields = ['id', 'name', 'slug']  # Adjust the fields you want to search on
 
 class ProductAPIView(ModelViewSet):
     queryset = models.Product.objects.all()
@@ -37,8 +37,8 @@ class ProductAPIView(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter, DjangoFilterBackend]
-    search_fields = ['id', 'name', 'description', 'brand__name', 'category__name',]  # Adjust the fields you want to search on
-    filterset_fields = ['seller' ,'category', 'brand', 'is_active']  # Adjust the fields you want to filter on
+    search_fields = ['id', 'name', 'slug', 'description', 'seller__store_name', 'brand__name', 'brand__slug', 'category__name', 'category__slug']  # Adjust the fields you want to search on
+    filterset_fields = ['seller','category', 'brand', 'is_active']  # Adjust the fields you want to filter on
 
     def perform_create(self, serializer):
         serializer.save(seller=self.request.user.seller_account)
@@ -50,8 +50,8 @@ class ProductVariantAPIView(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter, DjangoFilterBackend]
-    search_fields = ['id', 'name', 'description']  # Adjust the fields you want to search on
-    filterset_fields = ['product', 'price', 'stock']  # Adjust the fields you want to filter on
+    search_fields = ['id', 'sku', 'product__name', 'product__slug']  # Adjust the fields you want to search on
+    filterset_fields = ['product', 'sku', 'regular_price' ,'price', 'stock', 'is_active']  # Adjust the fields you want to filter on
 
     def perform_create(self, serializer):
         serializer.save()  # You can add additional logic here if needed
@@ -72,8 +72,9 @@ class AttributeValueAPIView(ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]  # Add your permission classes here if needed
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
-    filter_backends = [SearchFilter]
-    search_fields = ['id', 'value']  # Adjust the fields you want to search
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+    search_fields = ['id', 'value', 'attribute__name']  # Adjust the fields you want to search
+    filterset_fields = ['attribute']
 
 class VariantAttributeValueAPIView(ModelViewSet):
     queryset = models.VariantAttributeValue.objects.all()
@@ -82,7 +83,7 @@ class VariantAttributeValueAPIView(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter]
-    search_fields = ['id', 'value']  # Adjust the fields you want to search on
+    search_fields = ['id', 'value__value', 'value__attribute__name', 'variant__sku']  # Adjust the fields you want to search on
 
     def perform_create(self, serializer):
         serializer.save()  # You can add additional logic here if needed
