@@ -95,7 +95,7 @@ class CreateOrderWithCOD(APIView):
                 # Check if enough stock is available for the requested quantity.
                 if product_variant.stock < item.quantity:
                     # NOTE: Consider handling this error more gracefully in future.
-                    raise ValueError(f"Not enough stock for product_variant: {product_variant.product.name}")
+                    return Response({"error": f"Not enough stock for product_variant: {product_variant.product.name}"})
 
                 # Calculate item price and subtotal.
                 price = product_variant.price  # Use current price as snapshot.
