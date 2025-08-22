@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 from rest_framework.exceptions import ValidationError
+from rest_framework.throttling import UserRateThrottle
 from core.Permissions import IsOwnerOrReadOnly
 from core.paginations import StandardResultsSetPagination
 from .models import Review
@@ -16,6 +17,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = StandardResultsSetPagination
+    throttle_classes = [UserRateThrottle]
 
     def get_queryset(self):
         product_id = self.kwargs.get("product_id")
@@ -42,6 +44,7 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [IsOwnerOrReadOnly]
+    throttle_classes = [UserRateThrottle]
 
     def perform_update(self, serializer):
         if self.get_object().user != self.request.user:

@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.throttling import UserRateThrottle
 from django.db.models import F
 from .models import Notification
 from .serializers import NotificationSerializer
@@ -12,6 +13,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = StandardResultsSetPagination
+    throttle_classes = [UserRateThrottle]
 
     def get_queryset(self):
         # Optimize query if recipient is a ForeignKey
