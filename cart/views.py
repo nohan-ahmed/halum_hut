@@ -8,6 +8,7 @@ from core.Permissions import IsOwnerOrReadOnly, IsOwner
 from core.paginations import StandardResultsSetPagination
 from . import serializers
 from . import models
+from .Permissions import IsOwnerForCartItem
 
 # Create your views here.
 
@@ -15,8 +16,12 @@ class CartViewSet(viewsets.ModelViewSet):
     queryset = models.Cart.objects.all()
     serializer_class = serializers.CartSerializer
     permission_classes = [IsOwner]
-    pagination_class =  StandardResultsSetPagination
 
+    # - Added a get_queryset() method to ensure only the authenticated user's
+    #  cart is returned, instead of exposing all carts in the system.
+    def get_queryset(self):
+        return models.Cart.objects.filter(user=self.request.user)
+    
     def perform_create(self, serializer):
         """
         Override the default create method to enforce the 
@@ -32,7 +37,7 @@ class CartViewSet(viewsets.ModelViewSet):
 class CartItemViewSet(viewsets.ModelViewSet):
     queryset = models.CartItem.objects.all()
     serializer_class = serializers.CartItemSerializer
-    permission_classes = [IsOwner]
+    permission_classes = [IsOwnerForCartItem]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['cart__user', 'variant', 'variant__product__name']
@@ -44,6 +49,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         user = self.request.user
+        # Get or create a cart for the user.
         cart, created = models.Cart.objects.get_or_create(user=user)
         serializer.save(cart=cart)
         

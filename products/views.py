@@ -14,26 +14,26 @@ from products import serializers, models
 class BrandAPIView(ModelViewSet):
     queryset = models.Brand.objects.all()
     serializer_class = serializers.BrandSerializer
-    permission_classes = [IsAdminOrReadOnly]  # Add your permission classes here if needed
+    permission_classes = [IsAdminOrReadOnly] 
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter]
-    search_fields = ['id', 'name', 'slug']  # Adjust the fields you want to search on
+    search_fields = ['id', 'name', 'slug'] 
     
 
 class CategoryAPIView(ModelViewSet):
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
-    permission_classes = [IsAdminOrReadOnly]  # Add your permission classes here if needed
+    permission_classes = [IsAdminOrReadOnly]  
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter]
-    search_fields = ['id', 'name', 'slug']  # Adjust the fields you want to search on
+    search_fields = ['id', 'name', 'slug']  
 
 class ProductAPIView(ModelViewSet):
     queryset = models.Product.objects.all()
     serializer_class = serializers.ProductSerializer
-    permission_classes = [IsSellerOrReadOnly]  # Add your permission classes here if needed
+    permission_classes = [IsSellerOrReadOnly]  
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter, DjangoFilterBackend]
@@ -46,47 +46,47 @@ class ProductAPIView(ModelViewSet):
 class ProductVariantAPIView(ModelViewSet):
     queryset = models.ProductVariant.objects.all()
     serializer_class = serializers.ProductVariantSerializer
-    permission_classes = [IsSellerOrReadOnlyForProductData]  # Add your permission classes here if needed
+    permission_classes = [IsSellerOrReadOnlyForProductData]  
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter, DjangoFilterBackend]
-    search_fields = ['id', 'sku', 'product__name', 'product__slug']  # Adjust the fields you want to search on
-    filterset_fields = ['product', 'sku', 'regular_price' ,'price', 'stock', 'is_active']  # Adjust the fields you want to filter on
+    search_fields = ['id', 'sku', 'product__name', 'product__slug'] 
+    filterset_fields = ['product', 'sku', 'regular_price' ,'price', 'stock', 'is_active'] 
 
     def perform_create(self, serializer):
-        serializer.save()  # You can add additional logic here if needed
-        # For example, if you want to set the product automatically based on the request
+        serializer.save()  # You can add additional logic here.(Polash:: 1/1/2023)
+
         
 class AttributeAPIView(ModelViewSet):
     queryset = models.Attribute.objects.all()
     serializer_class = serializers.AttributeSerializer
-    permission_classes = [IsAdminOrReadOnly]  # Add your permission classes here if needed
+    permission_classes = [IsAdminOrReadOnly]
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter]
-    search_fields = ['id', 'name']  # Adjust the fields you want to search on
+    search_fields = ['id', 'name']  
 
 class AttributeValueAPIView(ModelViewSet):
     queryset = models.AttributeValue.objects.all()
     serializer_class = serializers.AttributeValueSerializer
-    permission_classes = [IsAdminOrReadOnly]  # Add your permission classes here if needed
+    permission_classes = [IsAdminOrReadOnly] 
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter, DjangoFilterBackend]
-    search_fields = ['id', 'value', 'attribute__name']  # Adjust the fields you want to search
+    search_fields = ['id', 'value', 'attribute__name']  
     filterset_fields = ['attribute']
 
 class VariantAttributeValueAPIView(ModelViewSet):
     queryset = models.VariantAttributeValue.objects.all()
     serializer_class = serializers.VariantAttributeValueSerializer
-    permission_classes = [IsSellerOrReadOnlyForVariantAttributeValue]  # Add your permission classes here if needed
+    permission_classes = [IsSellerOrReadOnlyForVariantAttributeValue]  
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter]
-    search_fields = ['id', 'value__value', 'value__attribute__name', 'variant__sku']  # Adjust the fields you want to search on
+    search_fields = ['id', 'value__value', 'value__attribute__name', 'variant__sku']  
 
     def perform_create(self, serializer):
-        serializer.save()  # You can add additional logic here if needed
+        serializer.save()  
         
 class ProductImageAPIView(ModelViewSet):
     queryset = models.ProductImage.objects.all()
@@ -95,7 +95,7 @@ class ProductImageAPIView(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     pagination_class = StandardResultsSetPagination
     filter_backends = [SearchFilter]
-    search_fields = ['id', 'image', 'alt_text']  # Adjust the fields you want to search
+    search_fields = ['id', 'image', 'alt_text'] 
 
     def perform_create(self, serializer):
-        serializer.save()  # You can add additional logic here if needed
+        serializer.save()  
