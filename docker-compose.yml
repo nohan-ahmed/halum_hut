@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   redis:
     image: redis:7
@@ -5,23 +7,44 @@ services:
       - "6379:6379"
 
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - .:/app
+      - .:/app  # mount source code for hot reload
     ports:
       - "8000:8000"
     depends_on:
       - redis
     environment:
-      - DEBUG=1
-    command: uvicorn halum_hut.asgi:application --host 0.0.0.0 --port 8000 --reload
+      DEBUG: "1"
+      PYTHONUNBUFFERED: "1"
+    command: >
+      sh -c "python manage.py migrate &&
+             uvicorn halum_hut.asgi:application --host 0.0.0.0 --port 8000 --reload"
 
   celery:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
       - .:/app
     depends_on:
       - redis
     environment:
-      - DEBUG=1
+      DEBUG: "1"
+      PYTHONUNBUFFERED: "1"
     command: celery -A halum_hut worker --loglevel=info
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      DEBUG: "1"
+      PYTHONUNBUFFERED: "1"
+    command: celery -A halum_hut beat --loglevel=info

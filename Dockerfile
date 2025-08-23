@@ -1,18 +1,30 @@
+# Base image
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
+# Set working directory
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y build-essential libpq-dev curl
+# Install system dependencies and clean cache
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+ && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /app/
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-RUN pip install "uvicorn[standard]"
+# Copy only requirements first for caching
+COPY requirements.txt .
 
-COPY . /app/
+# Upgrade pip and install Python dependencies
+RUN pip install --upgrade pip \
+ && pip install -r requirements.txt
 
+# Copy application code
+COPY . .
+
+# Expose port for dev server
 EXPOSE 8000
 
