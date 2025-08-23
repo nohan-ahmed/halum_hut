@@ -164,12 +164,59 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+# ------------------------------------------------------------------------------
+# AWS S3 CONFIGURATION (django-storages)
+# ------------------------------------------------------------------------------
+
+# AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+# AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+# AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")  # for media
+# AWS_STATIC_BUCKET_NAME = os.getenv("AWS_STATIC_BUCKET_NAME")    # for static
+# AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "us-east-1")
+
+# Prevent querystring auth for public files (esp. static)
+# AWS_QUERYSTRING_AUTH = False  
+
+# ------------------------------------------------------------------------------
+# DJANGO-STORAGES CONFIGURATION (new style for Django ≥4.2 + django-storages ≥1.14)
+# ------------------------------------------------------------------------------
+
+# STORAGES = {
+#     "default": {  # MEDIA (user uploads)
+#         "BACKEND": "storages.backends.s3.S3Storage",
+#         "OPTIONS": {
+#             "access_key": AWS_ACCESS_KEY_ID,
+#             "secret_key": AWS_SECRET_ACCESS_KEY,
+#             "bucket_name": AWS_STORAGE_BUCKET_NAME,
+#             "region_name": AWS_S3_REGION_NAME,
+#         },
+#     },
+#     "staticfiles": {  # STATIC (collectstatic)
+#         "BACKEND": "storages.backends.s3.S3Storage",
+#         "OPTIONS": {
+#             "access_key": AWS_ACCESS_KEY_ID,
+#             "secret_key": AWS_SECRET_ACCESS_KEY,
+#             "bucket_name": AWS_STATIC_BUCKET_NAME,
+#             "region_name": AWS_S3_REGION_NAME,
+#         },
+#     },
+# }
+
+# ------------------------------------------------------------------------------
+# STATIC & MEDIA URLs
+# ------------------------------------------------------------------------------
+
+# STATIC_URL = f"https://{AWS_STATIC_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
+# MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
+
+# ------------------------------------------------------------------------------
+# local storage settings
+# ------------------------------------------------------------------------------
+
 # URL to access static files
 STATIC_URL = '/static/'
-
 # Directory where collected files will be placed
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Directory where uploaded files will be stored
