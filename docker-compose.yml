@@ -1,6 +1,18 @@
 version: "3.9"
 
 services:
+  postgres:
+    image: postgres:15
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   redis:
     image: redis:7
     ports:
@@ -11,11 +23,12 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - .:/app  # mount source code for hot reload
+      - .:/app
     ports:
       - "8000:8000"
     depends_on:
       - redis
+      - postgres
     environment:
       DEBUG: "1"
       PYTHONUNBUFFERED: "1"
@@ -31,6 +44,7 @@ services:
       - .:/app
     depends_on:
       - redis
+      - postgres
     environment:
       DEBUG: "1"
       PYTHONUNBUFFERED: "1"
@@ -44,7 +58,11 @@ services:
       - .:/app
     depends_on:
       - redis
+      - postgres
     environment:
       DEBUG: "1"
       PYTHONUNBUFFERED: "1"
     command: celery -A halum_hut beat --loglevel=info
+
+volumes:
+  postgres_data:

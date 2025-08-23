@@ -112,14 +112,30 @@ ASGI_APPLICATION = 'halum_hut.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# ----------------------------------------------------------------------
+# DATABASE & OTHER SETTINGS
+# ----------------------------------------------------------------------
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("POSTGRES_DB"),
+        "USER": env("POSTGRES_USER"),
+        "PASSWORD": env("POSTGRES_PASSWORD"),
+        "HOST": env("POSTGRES_HOST", default="postgres"),  # docker service name
+        "PORT": env("POSTGRES_PORT", default="5432"),
+        "ATOMIC_REQUESTS": True,
     }
 }
-
+# ----------------------------------------------------------------------
 # django-channels configuration for Redis
+# ----------------------------------------------------------------------
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
