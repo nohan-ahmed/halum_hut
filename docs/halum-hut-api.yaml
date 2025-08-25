@@ -1,0 +1,1470 @@
+openapi: 3.0.3
+info:
+  title: Halum Hut API
+  description: API documentation for the Halum Hut e-commerce platform
+  version: 1.0.0
+  contact:
+    name: Halum Hut Support
+    email: support@halumhut.com
+
+servers:
+  - url: https://api.halumhut.com/v1
+    description: Production server
+  - url: https://staging-api.halumhut.com/v1
+    description: Staging server
+  - url: http://localhost:8000
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone_number:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [M, F, O]
+        is_active:
+          type: boolean
+        is_staff:
+          type: boolean
+        date_joined:
+          type: string
+          format: date-time
+        
+    Address:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          type: integer
+          format: int64
+        address_line1:
+          type: string
+        address_line2:
+          type: string
+          nullable: true
+        city:
+          type: string
+        state:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        is_default:
+          type: boolean
+        address_type:
+          type: string
+          enum: [shipping, billing]
+          
+    SellerAccount:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          type: integer
+          format: int64
+        store_name:
+          type: string
+        store_description:
+          type: string
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        banner:
+          type: string
+          format: uri
+          nullable: true
+        is_verified:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        parent:
+          type: integer
+          format: int64
+          nullable: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+        is_active:
+          type: boolean
+          
+    Brand:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        is_active:
+          type: boolean
+          
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        seller:
+          $ref: '#/components/schemas/SellerAccount'
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        category:
+          $ref: '#/components/schemas/Category'
+        brand:
+          $ref: '#/components/schemas/Brand'
+        base_price:
+          type: number
+          format: float
+        discount_percentage:
+          type: number
+          format: float
+        tax_rate:
+          type: number
+          format: float
+        stock_status:
+          type: string
+          enum: [in_stock, out_of_stock, backorder]
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Cart:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        cart:
+          type: integer
+          format: int64
+        variant:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Wishlist:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          type: integer
+          format: int64
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    WishlistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        wishlist:
+          type: integer
+          format: int64
+        product:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    ProductVariant:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        product:
+          type: integer
+          format: int64
+        sku:
+          type: string
+        price:
+          type: number
+          format: float
+        stock_quantity:
+          type: integer
+        is_default:
+          type: boolean
+        attributes:
+          type: array
+          items:
+            type: object
+            properties:
+              attribute:
+                type: string
+              value:
+                type: string
+                
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          type: string
+        product:
+          type: integer
+          format: int64
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewImage'
+        created_at:
+          type: string
+          format: date-time
+          
+    ReviewImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        image:
+          type: string
+          format: uri
+        uploaded_at:
+          type: string
+          format: date-time
+          
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          type: integer
+          format: int64
+        order_number:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, shipped, delivered, cancelled]
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+        billing_address:
+          $ref: '#/components/schemas/Address'
+        payment_method:
+          type: string
+        payment_status:
+          type: string
+          enum: [pending, paid, failed, refunded]
+        subtotal:
+          type: number
+          format: float
+        shipping_cost:
+          type: number
+          format: float
+        tax:
+          type: number
+          format: float
+        discount:
+          type: number
+          format: float
+        total:
+          type: number
+          format: float
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        order:
+          type: integer
+          format: int64
+        product_variant:
+          $ref: '#/components/schemas/ProductVariant'
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: float
+        total:
+          type: number
+          format: float
+          
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        order:
+          type: integer
+          format: int64
+        amount:
+          type: number
+          format: float
+        payment_method:
+          type: string
+        transaction_id:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, completed, failed, refunded]
+        created_at:
+          type: string
+          format: date-time
+          
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        recipient:
+          type: integer
+          format: int64
+        sender:
+          type: integer
+          format: int64
+          nullable: true
+        notification_type:
+          type: string
+          enum: [order_status, payment, review, product_update, system]
+        title:
+          type: string
+        message:
+          type: string
+        url:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+paths:
+  # Cart Management
+  /api/carts/:
+    get:
+      summary: List User's Cart
+      description: Retrieves the authenticated user's shopping cart
+      tags:
+        - Cart
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '401':
+          description: Not authenticated
+        '404':
+          description: Cart not found
+    
+    post:
+      summary: Create Cart
+      description: Creates a shopping cart for the authenticated user
+      tags:
+        - Cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Cart created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '400':
+          description: User already has a cart
+        '401':
+          description: Not authenticated
+
+  /api/cart-items/:
+    get:
+      summary: List Cart Items
+      description: Retrieves all items in the authenticated user's cart
+      tags:
+        - Cart
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: variant
+          in: query
+          description: Filter by product variant ID
+          schema:
+            type: integer
+        - name: variant__product__name
+          in: query
+          description: Filter by product name
+          schema:
+            type: string
+        - name: search
+          in: query
+          description: Search by SKU or product name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cart items retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CartItem'
+        '401':
+          description: Not authenticated
+    
+    post:
+      summary: Add Item to Cart
+      description: Adds a product variant to the authenticated user's cart
+      tags:
+        - Cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                variant:
+                  type: integer
+                  format: int64
+                quantity:
+                  type: integer
+                  format: int32
+                  minimum: 1
+              required:
+                - variant
+                - quantity
+      responses:
+        '201':
+          description: Item added to cart successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+        '400':
+          description: Invalid input data
+        '401':
+          description: Not authenticated
+
+  /api/cart-items/{id}/:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    
+    put:
+      summary: Update Cart Item
+      description: Updates the quantity of a product variant in the cart
+      tags:
+        - Cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                variant:
+                  type: integer
+                  format: int64
+                quantity:
+                  type: integer
+                  format: int32
+                  minimum: 1
+              required:
+                - variant
+                - quantity
+      responses:
+        '200':
+          description: Cart item updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+        '400':
+          description: Invalid input data
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not the owner of the cart item
+        '404':
+          description: Cart item not found
+    
+    delete:
+      summary: Remove Cart Item
+      description: Removes a product variant from the cart
+      tags:
+        - Cart
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Cart item removed successfully
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not the owner of the cart item
+        '404':
+          description: Cart item not found
+
+  /api/wishlist/:
+    get:
+      summary: List User's Wishlists
+      description: Retrieves all wishlists belonging to the authenticated user
+      tags:
+        - Wishlist
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Wishlists retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Wishlist'
+        '401':
+          description: Not authenticated
+    
+    post:
+      summary: Create Wishlist
+      description: Creates a new wishlist for the authenticated user
+      tags:
+        - Wishlist
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              required:
+                - name
+      responses:
+        '201':
+          description: Wishlist created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wishlist'
+        '400':
+          description: Invalid input data or duplicate wishlist name
+        '401':
+          description: Not authenticated
+
+  /api/wishlist/{id}/:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    
+    put:
+      summary: Update Wishlist
+      description: Updates a wishlist's name
+      tags:
+        - Wishlist
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              required:
+                - name
+      responses:
+        '200':
+          description: Wishlist updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wishlist'
+        '400':
+          description: Invalid input data or duplicate wishlist name
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not the owner of the wishlist
+        '404':
+          description: Wishlist not found
+    
+    delete:
+      summary: Delete Wishlist
+      description: Deletes a wishlist and all its items
+      tags:
+        - Wishlist
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Wishlist deleted successfully
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not the owner of the wishlist
+        '404':
+          description: Wishlist not found
+
+  /api/wishlist-items/:
+    get:
+      summary: List Wishlist Items
+      description: Retrieves all items in the authenticated user's wishlists
+      tags:
+        - Wishlist
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: wishlist__user
+          in: query
+          description: Filter by user ID
+          schema:
+            type: integer
+        - name: product__name
+          in: query
+          description: Filter by product name
+          schema:
+            type: string
+        - name: search
+          in: query
+          description: Search by product name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Wishlist items retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WishlistItem'
+        '401':
+          description: Not authenticated
+    
+    post:
+      summary: Add Item to Wishlist
+      description: Adds a product to a wishlist
+      tags:
+        - Wishlist
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                wishlist:
+                  type: integer
+                  format: int64
+                product:
+                  type: integer
+                  format: int64
+              required:
+                - wishlist
+                - product
+      responses:
+        '201':
+          description: Item added to wishlist successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistItem'
+        '400':
+          description: Invalid input data or product already in wishlist
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not the owner of the wishlist
+
+  /api/wishlist-items/{id}/:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    
+    delete:
+      summary: Remove Wishlist Item
+      description: Removes a product from a wishlist
+      tags:
+        - Wishlist
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Wishlist item removed successfully
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not the owner of the wishlist item
+        '404':
+          description: Wishlist item not found
+
+  /accounts/api/registration/:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password1:
+                  type: string
+                password2:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                phone_number:
+                  type: string
+                date_of_birth:
+                  type: string
+                  format: date
+                gender:
+                  type: string
+                  enum: [M, F, O]
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid input data
+          
+  /accounts/api/:
+    post:
+      summary: Login user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+        '400':
+          description: Invalid credentials
+          
+  /accounts/api/profile/:
+    get:
+      summary: Get user profile
+      tags:
+        - User Profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          
+  /accounts/api/profile/address/:
+    get:
+      summary: List user addresses
+      tags:
+        - User Profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Addresses retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Address'
+        '401':
+          description: Unauthorized
+          
+    post:
+      summary: Create new address
+      tags:
+        - User Profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+      responses:
+        '201':
+          description: Address created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '400':
+          description: Invalid input data
+        '401':
+          description: Unauthorized
+          
+  /vendors/api/sellers/:
+    get:
+      summary: List seller accounts
+      tags:
+        - Vendors
+      responses:
+        '200':
+          description: Seller accounts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SellerAccount'
+                  
+    post:
+      summary: Create seller account
+      tags:
+        - Vendors
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SellerAccount'
+      responses:
+        '201':
+          description: Seller account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerAccount'
+        '400':
+          description: Invalid input data
+        '401':
+          description: Unauthorized
+          
+  /products/api/products/:
+    get:
+      summary: List products
+      tags:
+        - Products
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: integer
+        - name: brand
+          in: query
+          schema:
+            type: integer
+        - name: seller
+          in: query
+          schema:
+            type: integer
+        - name: min_price
+          in: query
+          schema:
+            type: number
+        - name: max_price
+          in: query
+          schema:
+            type: number
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                      
+    post:
+      summary: Create product
+      tags:
+        - Products
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid input data
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - not a seller
+          
+  /reviews/product/{product_id}/:
+    get:
+      summary: List reviews for a product
+      tags:
+        - Reviews
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Reviews retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+                      
+    post:
+      summary: Create review for a product
+      tags:
+        - Reviews
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+                uploaded_images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '201':
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid input data or already reviewed
+        '401':
+          description: Unauthorized
+        '404':
+          description: Product not found
+          
+  /reviews/{review_id}/:
+    get:
+      summary: Get review details
+      tags:
+        - Reviews
+      parameters:
+        - name: review_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Review retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '404':
+          description: Review not found
+          
+    put:
+      summary: Update review
+      tags:
+        - Reviews
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: review_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+                uploaded_images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid input data
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - not the owner
+        '404':
+          description: Review not found
+          
+    delete:
+      summary: Delete review
+      tags:
+        - Reviews
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: review_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Review deleted successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - not the owner
+        '404':
+          description: Review not found
+          
+  /orders/api/:
+    get:
+      summary: List user orders
+      tags:
+        - Orders
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+        '401':
+          description: Unauthorized
+          
+    post:
+      summary: Create order
+      tags:
+        - Orders
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipping_address:
+                  type: integer
+                billing_address:
+                  type: integer
+                payment_method:
+                  type: string
+                notes:
+                  type: string
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid input data
+        '401':
+          description: Unauthorized
+          
+  /notifications/api/notifications/:
+    get:
+      summary: List user notifications
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: is_read
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+        '401':
+          description: Unauthorized
+          
+  /notifications/api/notifications/{id}/:
+    get:
+      summary: Get notification details
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Notification retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Notification not found
+          
+  /notifications/api/notifications/{id}/mark_read/:
+    post:
+      summary: Mark notification as read
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Notification not found
+          
+  /notifications/api/notifications/mark_all_read/:
+    post:
+      summary: Mark all notifications as read
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: integer
+        '401':
+          description: Unauthorized
