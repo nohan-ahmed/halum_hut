@@ -34,6 +34,24 @@ SECRET_KEY = 'django-insecure-epst$e%yvw2fpqcy%=4awc$$qtj@r^+y2yzsye5+kfxi_u#mnx
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+# CORS_ALLOWED_ORIGINS = [
+#     "https://example.com",
+#     "https://sub.example.com",
+#     "http://localhost:8080",
+#     "http://127.0.0.1:9000",
+# ]
+
+# settings.py
+CORS_ALLOW_ALL_ORIGINS = True # Allow all origins NOTE : This is not recommended for production
+
+# CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
+CSRF_TRUSTED_ORIGINS = [
+    "http://*",
+    "https://*",
+    "https://*.ngrok-free.app",  # all ngrok subdomains
+    "http://localhost",
+    "http://127.0.0.1",
+]
 
 AUTH_USER_MODEL = 'accounts.User'  # Specify the custom user model
 
@@ -52,6 +70,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     'rest_framework_simplejwt.token_blacklist', # For token blacklisting
     "django_filters",
+    "corsheaders",
     # ...,
     'dj_rest_auth',
     'django.contrib.sites',
@@ -75,6 +94,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise middleware
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -293,3 +313,7 @@ EMAIL_HOST_PASSWORD = env("EMAIL_PASSWORD")
 # django-celery settings
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+
+# stripe configuration
+STRIPE_API_KEY= env("STRIPE_API_KEY")
+STRIPE_WEBHOOK_SECRET= env("STRIPE_WEBHOOK_SECRET")
