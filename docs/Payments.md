@@ -72,11 +72,11 @@ Retrieves a specific payment by ID.
 }
 ```
 
-### Create Online Payment
+### Create Stripe Payment
 
-Initiates an online payment for an order.
+Initiates a Stripe payment for an order.
 
-- **URL**: `/orders/api/create-payment/`
+- **URL**: `/orders/api/create-stripe-order/`
 - **Method**: `POST`
 - **Auth Required**: Yes
 - **Headers**: `Authorization: Bearer <access_token>`
@@ -85,8 +85,7 @@ Initiates an online payment for an order.
 
 ```json
 {
-  "order_id": 1,
-  "payment_method": "ONLINE"
+  "shipping_address": 1
 }
 ```
 
@@ -94,17 +93,25 @@ Initiates an online payment for an order.
 
 ```json
 {
-  "payment_id": 3,
-  "checkout_url": "https://payment-gateway.com/checkout/session_123456",
-  "amount": "1598.00",
-  "currency": "USD",
-  "status": "pending"
+  "id": "cs_test_123456",
+  "url": "https://checkout.stripe.com/c/pay/cs_test_123456"
 }
 ```
 
-### Payment Webhook
+### Stripe Webhook
 
-Endpoint for payment gateway to send payment status updates.
+Endpoint for Stripe to send payment status updates.
+
+- **URL**: `/orders/api/stripe-webhook/`
+- **Method**: `POST`
+- **Auth Required**: No (Uses Stripe signature verification)
+- **Headers**: `stripe-signature: <signature>`
+
+**Events Handled**: `checkout.session.completed`
+
+### Generic Payment Webhook
+
+Endpoint for other payment gateways to send payment status updates.
 
 - **URL**: `/orders/api/payment-webhook/`
 - **Method**: `POST`
@@ -129,7 +136,7 @@ Endpoint for payment gateway to send payment status updates.
 ```json
 {
   "status": "success",
-  "message": "Webhook processed successfully"
+  "message": "Payment confirmed"
 }
 ```
 
@@ -148,7 +155,8 @@ Payments can have the following status values:
 The following payment methods are supported:
 
 - `COD`: Cash On Delivery
-- `ONLINE`: Online payment through integrated payment gateway
+- `stripe`: Stripe payment gateway
+- `ONLINE`: Generic online payment gateway
 
 ## Validation Rules
 
